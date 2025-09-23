@@ -1,6 +1,6 @@
 #include "bricks.h"
 
-void drawBricks(Buffer* buffer, size_t width, size_t height, size_t brickWidth, size_t brickHeight) {
+void drawBricks(Buffer* buffer, size_t height, size_t width, size_t brickWidth, size_t brickHeight) {
 	size_t bricksPerRow = buffer->width / brickWidth;
 	for(size_t xi = 0; xi < bricksPerRow; ++xi) {
 		for(size_t yi = 0; yi <= sizeof(colors); ++yi) {

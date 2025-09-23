@@ -128,15 +128,16 @@ int main() {
 	while(!glfwWindowShouldClose(window) && isRunning) {
 		bufferClear(&buffer, clearColor);
 
-		/**************/
 		/* -- Draw -- */
-		drawBricks(&buffer, buffer.width, buffer.height, 10, 10);
+		drawBricks(&buffer, buffer.height, buffer.width, 10, 10);
 
 		// Draw Player
-		bufferDrawRect(&buffer, player.width, player.height, player.x, player.y, player.color);
-		/**************/
+		bufferDrawRect(&buffer, player.height, player.width, player.x, player.y, player.color);
 
-		// RENDERING
+		// Draw Ball
+		bufferDrawBall(&buffer, buffer.width / 2, buffer.height / 2, rgbToUint32(195, 175, 205));
+
+		/* -- RENDERING -- */
 		glTexSubImage2D(
 			GL_TEXTURE_2D, 0, 0, 0,
 			buffer.width, buffer.height,
@@ -161,7 +162,12 @@ int main() {
 			player.x = new_x;
 		}
 
-		// Poll
+		// Ball
+		// Todo - Implement ball movement
+
+		// Bricks
+
+		/* -- Poll Events -- */
 		glfwPollEvents();
 	} /* - END MAIN LOOP - */
 
