@@ -3,6 +3,7 @@
 #ifndef INPUT_HANDLERS
 #define INPUT_HANDLERS
 
-void handleKeyboardEvents(GLFWwindow* window, int key, int scancode, int action, int mods);
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void handleKeyboardEvents(GLFWwindow* window);
 
 #endif // INPUT_HANDLERS

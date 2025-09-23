@@ -1,15 +1,25 @@
 #include "player.h"
 #include "inputHandlers.h"
 
-void handleKeyboardEvents(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+bool keys[1024];
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	} else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+	} else if (action == GLFW_PRESS) {
+		keys[key] = true;
+	} else if (action == GLFW_RELEASE) {
+		keys[key] = false;
+	}
+}
+
+void handleKeyboardEvents(GLFWwindow* window) {
+	Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+	if (keys[GLFW_KEY_LEFT]) {
 		player->direction = -1;
-	} else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+	} else if (keys[GLFW_KEY_RIGHT]) {
 		player->direction = 1;
-	} else if (key == GLFW_KEY_RIGHT || key == GLFW_KEY_LEFT and action == GLFW_RELEASE) {
+	} else {
 		player->direction = 0;
 	}
 }

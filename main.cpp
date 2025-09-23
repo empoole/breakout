@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <limits>
 
 #include "utils.h"
 #include "inputHandlers.h"
@@ -39,7 +40,7 @@ int main() {
 	};
 	glfwSetWindowUserPointer(window, &player);
 
-	glfwSetKeyCallback(window, handleKeyboardEvents);
+	glfwSetKeyCallback(window, keyboardCallback);
 	glfwMakeContextCurrent(window);
 
 	glfwSwapInterval(1);
@@ -136,31 +137,33 @@ int main() {
 		/**************/
 
 		// RENDERING
-        glTexSubImage2D(
-            GL_TEXTURE_2D, 0, 0, 0,
-            buffer.width, buffer.height,
-            GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
-            buffer.data
-        );
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);		
+		glTexSubImage2D(
+			GL_TEXTURE_2D, 0, 0, 0,
+			buffer.width, buffer.height,
+			GL_RGBA, GL_UNSIGNED_INT_8_8_8_8,
+			buffer.data
+		);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 		glfwSwapBuffers(window);
 
 		/* -- SIMULATION -- */
+		handleKeyboardEvents(window);
 		// Player
 		if(player.direction != 0) {
-			player.x += player.direction * player.speed;
+			size_t new_x = player.x + player.direction * player.speed;
 			// Keep player within screen bounds
-			if(player.x < 0) {
-				player.x = 0;
-			} else if(player.x + player.width > buffer.width) {
-				player.x = buffer.width - player.width;
+			if(new_x >= std::numeric_limits<size_t>::max()) {
+				new_x = 1;
+			} else if(new_x + player.width >= buffer.width) {
+				new_x = buffer.width - player.width - 1;
 			}
+			player.x = new_x;
 		}
 
 		// Poll
 		glfwPollEvents();
-	}
+	} /* - END MAIN LOOP - */
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
