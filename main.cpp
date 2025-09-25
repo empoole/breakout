@@ -8,12 +8,38 @@
 #include "shaders.h"
 #include "bricks.h"
 #include "player.h"
+#include "ball.h"
 
 /*********************
 * -- GLOBAL VARS  -- *
 **********************/
 bool isRunning = false;
+
+void reset(Ball* ball, size_t x, size_t y) {
+	ball->x = x;
+	ball->y = y;
+	ball->direction_x = 1;
+	ball->direction_y = 1;
+	ball->speed = 1;
+}
+
 int main() {
+	// game objects setup
+	Player player = {
+		0, 0, // starting x and y
+		28, 6, // width and height
+		0, // direction
+		2, // speed
+		rgbToUint32(187, 187, 187) //color
+	};
+
+	Ball ball = {
+		0, 0, // starting x and y
+		0, 0, // direction x and y
+		1, // speed
+		rgbToUint32(195, 175, 205) // color
+	};
+
 	// GLFW Setup
 	glfwSetErrorCallback(errorCallback);
 
@@ -31,13 +57,6 @@ int main() {
 	}
 
 	// Provide a pointer to the player instance to the keyboard handler
-	Player player = {
-		0, 0, // starting x and y
-		28, 6, // width and height
-		0, // direction
-		2, // speed
-		rgbToUint32(187, 187, 187) // color
-	};
 	glfwSetWindowUserPointer(window, &player);
 
 	glfwSetKeyCallback(window, keyboardCallback);
@@ -122,6 +141,11 @@ int main() {
 	uint32_t clearColor = rgbToUint32(0, 0, 0);
 	player.x = buffer.width / 2;
 	player.y = 40;
+
+	ball.x = buffer.width / 2;
+	ball.y = buffer.height / 2;
+	ball.direction_y = 1;
+	ball.direction_x = 1;
 	/******************
 	* -- MAIN LOOP -- *
 	*******************/
@@ -135,7 +159,7 @@ int main() {
 		bufferDrawRect(&buffer, player.height, player.width, player.x, player.y, player.color);
 
 		// Draw Ball
-		bufferDrawBall(&buffer, buffer.width / 2, buffer.height / 2, rgbToUint32(195, 175, 205));
+		bufferDrawBall(&buffer, ball.x, ball.y, ball.color);
 
 		/* -- RENDERING -- */
 		glTexSubImage2D(
@@ -163,7 +187,47 @@ int main() {
 		}
 
 		// Ball
-		// Todo - Implement ball movement
+		if(ball.direction_x != 0 && ball.direction_y != 0) {
+			size_t new_x = ball.x + ball.direction_x * ball.speed;
+			size_t new_y = ball.y + ball.direction_y * ball.speed;
+
+			// Left and right wall collisions
+			if(new_x >= std::numeric_limits<size_t>::max()) {
+				new_x = 1;
+				ball.direction_x *= -1;
+			} else if (new_x + 6 >= buffer.width) {
+				new_x = buffer.width - 6 - 1;
+				ball.direction_x *= -1;
+			}
+
+			// Ceiling and floor collisions
+			if(new_y + 6 >= buffer.height) {
+				new_y = buffer.height - 6 - 1;
+				ball.direction_y *= -1;
+			} else if(new_y >= std::numeric_limits<size_t>::max()) {
+				reset(&ball, buffer.width / 2, buffer.height / 2);
+			}
+
+			// Player collisions
+			if(new_y <= player.y) {
+				if(new_x + 6 >= player.x && new_x + 6 <= player.x + player.width) {
+					new_y = player.y + 6 + 1;
+					ball.direction_y *= -1;
+					if(ball.direction_x == player.direction) {
+						ball.speed += player.speed / 2;
+					} else if (ball.direction_x != player.direction) {
+						if (ball.speed > player.speed) {
+							ball.speed -= player.speed / 2;
+						}
+						ball.direction_x *= -1;
+					}
+				}
+			}
+
+			// Update ball position
+			ball.x = new_x;
+			ball.y = new_y;
+		}
 
 		// Bricks
 
