@@ -14,6 +14,7 @@
 * -- GLOBAL VARS  -- *
 **********************/
 bool isRunning = false;
+Brick bricks[168];
 
 void reset(Ball* ball, size_t x, size_t y) {
 	ball->x = x;
@@ -146,14 +147,18 @@ int main() {
 	ball.y = buffer.height / 2;
 	ball.direction_y = 1;
 	ball.direction_x = 1;
+
 	/******************
 	* -- MAIN LOOP -- *
 	*******************/
 	while(!glfwWindowShouldClose(window) && isRunning) {
+		/* -- Poll Events -- */
+		glfwPollEvents();
+
 		bufferClear(&buffer, clearColor);
 
 		/* -- Draw -- */
-		drawBricks(&buffer, buffer.height, buffer.width, 10, 10);
+		drawBricks(&buffer, 10, 10, bricks);
 
 		// Draw Player
 		bufferDrawRect(&buffer, player.height, player.width, player.x, player.y, player.color);
@@ -170,7 +175,7 @@ int main() {
 		);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-		glfwSwapBuffers(window);
+
 
 		/* -- SIMULATION -- */
 		handleKeyboardEvents(window);
@@ -193,26 +198,27 @@ int main() {
 
 			// Left and right wall collisions
 			if(new_x >= std::numeric_limits<size_t>::max()) {
-				new_x = 1;
+				new_x = 0;
 				ball.direction_x *= -1;
 			} else if (new_x + 6 >= buffer.width) {
-				new_x = buffer.width - 6 - 1;
+				new_x = buffer.width - 6;
 				ball.direction_x *= -1;
 			}
 
 			// Ceiling and floor collisions
 			if(new_y + 6 >= buffer.height) {
-				new_y = buffer.height - 6 - 1;
+				new_y = buffer.height - 6;
 				ball.direction_y *= -1;
-			} else if(new_y >= std::numeric_limits<size_t>::max()) {
+			} else if(new_y >= std::numeric_limits<size_t>::max() || new_y == 0) {
 				reset(&ball, buffer.width / 2, buffer.height / 2);
 			}
 
 			// Player collisions
-			if(new_y <= player.y) {
+			if(new_y - 6 <= player.y && new_y + 6 >= player.y - player.height) {
 				if(new_x + 6 >= player.x && new_x + 6 <= player.x + player.width) {
-					new_y = player.y + 6 + 1;
+					new_y = player.y + 6;
 					ball.direction_y *= -1;
+					/* ????
 					if(ball.direction_x == player.direction) {
 						ball.speed += player.speed / 2;
 					} else if (ball.direction_x != player.direction) {
@@ -220,6 +226,26 @@ int main() {
 							ball.speed -= player.speed / 2;
 						}
 						ball.direction_x *= -1;
+					}
+					*/// ????
+				}
+			}
+
+			// Brick collisions
+			for(size_t i = 0; i < 168; ++i) {
+				Brick* brick = &bricks[i];
+
+				// horizontals
+				// floor
+				if(new_y + 6 == brick->y) {
+					if(new_x + 6 >= brick->x && new_x - 6 <= (brick->x + brick->width)) {
+						fprintf(stderr, "test\n");
+						fprintf(stderr, "Brick x = %zu | new_x = (+/- 6) %zu\n", brick->x, new_x);
+						fprintf(stderr, "Brick bounds - %zu | %zu\n", brick->x, (brick->x + brick->width));
+						fprintf(stderr, "Brick y = %zu | new_y = %zu\n", brick->y, new_y);
+						new_y = brick->y - 6;
+						ball.direction_y *= -1;
+						brick->isBroken = true;
 					}
 				}
 			}
@@ -229,10 +255,7 @@ int main() {
 			ball.y = new_y;
 		}
 
-		// Bricks
-
-		/* -- Poll Events -- */
-		glfwPollEvents();
+		glfwSwapBuffers(window);
 	} /* - END MAIN LOOP - */
 
 	glfwDestroyWindow(window);

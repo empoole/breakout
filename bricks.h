@@ -4,6 +4,12 @@
 #include "graphicsBuffer.h"
 #include "utils.h"
 
+struct Brick {
+	size_t x, y;
+	size_t height, width;
+	bool isBroken;
+};
+
 const uint32_t colors[7] = {
 	rgbToUint32(128, 0, 0), // red
 	rgbToUint32(128, 74, 0), // orange
@@ -14,6 +20,6 @@ const uint32_t colors[7] = {
 	rgbToUint32(74, 0, 128) // violet
 };
 
-void drawBricks(Buffer* buffer, size_t width, size_t height, size_t brickWidth, size_t brickHeight);
+void drawBricks(Buffer* buffer, size_t brickWidth, size_t brickHeight, Brick* bricks);
 
 #endif // BRICKS
