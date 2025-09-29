@@ -3,10 +3,12 @@
 
 #include "graphicsBuffer.h"
 #include "utils.h"
+#include "ball.h"
 
 struct Brick {
 	size_t x, y;
 	size_t height, width;
+	size_t bottom;
 	bool isBroken;
 };
 
@@ -20,6 +22,8 @@ const uint32_t colors[7] = {
 	rgbToUint32(74, 0, 128) // violet
 };
 
+void initBricks(Brick* bricks, size_t brickHeight, size_t brickWidth, size_t bufferWidth, size_t numRows);
 void drawBricks(Buffer* buffer, size_t brickWidth, size_t brickHeight, Brick* bricks);
+bool detectBrickCollision(const size_t ballX, const size_t ballY, const Brick* brick);
 
 #endif // BRICKS

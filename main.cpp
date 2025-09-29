@@ -6,9 +6,9 @@
 #include "inputHandlers.h"
 #include "graphicsBuffer.h"
 #include "shaders.h"
+#include "ball.h"
 #include "bricks.h"
 #include "player.h"
-#include "ball.h"
 
 /*********************
 * -- GLOBAL VARS  -- *
@@ -16,12 +16,13 @@
 bool isRunning = false;
 Brick bricks[168];
 
-void reset(Ball* ball, size_t x, size_t y) {
-	ball->x = x;
-	ball->y = y;
-	ball->direction_x = 1;
+void resetGameState(Player* player, Ball* ball, Buffer* buffer) {
+	player->x = buffer->width / 2;
+	player->y = 40;
+	ball->x = buffer->width / 2;
+	ball->y = buffer->height / 2;
 	ball->direction_y = 1;
-	ball->speed = 1;
+	ball->direction_x = 1;
 }
 
 int main() {
@@ -148,6 +149,8 @@ int main() {
 	ball.direction_y = 1;
 	ball.direction_x = 1;
 
+	initBricks(bricks, 10, 10, buffer.width, 7);
+
 	/******************
 	* -- MAIN LOOP -- *
 	*******************/
@@ -210,7 +213,11 @@ int main() {
 				new_y = buffer.height - 6;
 				ball.direction_y *= -1;
 			} else if(new_y >= std::numeric_limits<size_t>::max() || new_y == 0) {
-				reset(&ball, buffer.width / 2, buffer.height / 2);
+
+
+				resetGameState(&player, &ball, &buffer);
+				initBricks(bricks, 10, 10, buffer.width, 7);
+				continue;
 			}
 
 			// Player collisions
@@ -218,35 +225,17 @@ int main() {
 				if(new_x + 6 >= player.x && new_x + 6 <= player.x + player.width) {
 					new_y = player.y + 6;
 					ball.direction_y *= -1;
-					/* ????
-					if(ball.direction_x == player.direction) {
-						ball.speed += player.speed / 2;
-					} else if (ball.direction_x != player.direction) {
-						if (ball.speed > player.speed) {
-							ball.speed -= player.speed / 2;
-						}
-						ball.direction_x *= -1;
-					}
-					*/// ????
 				}
 			}
 
 			// Brick collisions
 			for(size_t i = 0; i < 168; ++i) {
 				Brick* brick = &bricks[i];
-
-				// horizontals
-				// floor
-				if(new_y + 6 == brick->y) {
-					if(new_x + 6 >= brick->x && new_x - 6 <= (brick->x + brick->width)) {
-						fprintf(stderr, "test\n");
-						fprintf(stderr, "Brick x = %zu | new_x = (+/- 6) %zu\n", brick->x, new_x);
-						fprintf(stderr, "Brick bounds - %zu | %zu\n", brick->x, (brick->x + brick->width));
-						fprintf(stderr, "Brick y = %zu | new_y = %zu\n", brick->y, new_y);
-						new_y = brick->y - 6;
-						ball.direction_y *= -1;
-						brick->isBroken = true;
-					}
+				if (detectBrickCollision(new_x, new_y, brick)) {
+					ball.direction_y *= -1;
+					ball.direction_x *= -1;
+					brick->isBroken = true;
+					break;
 				}
 			}
 
