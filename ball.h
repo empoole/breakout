@@ -2,9 +2,9 @@
 #define BALL
 
 struct Ball {
-	size_t x, y;
-	size_t direction_x, direction_y;
-	size_t speed;
+	float x, y;
+	float direction_x, direction_y;
+	float speed;
 	uint32_t color;
 };
 

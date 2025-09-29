@@ -1,10 +1,16 @@
+#ifndef PLAYER
+#define PLAYER
+
 #include <cstddef>
 #include <cstdint>
 
 struct Player {
-	size_t x, y;
+	float x;
+	size_t y;
 	size_t width, height;
-	int8_t direction;
-	int8_t speed;
+	float direction;
+	float speed;
 	uint32_t color;
 };
+
+#endif // PLAYER

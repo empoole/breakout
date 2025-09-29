@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <limits>
+#include <random>
 
 #include "utils.h"
 #include "inputHandlers.h"
@@ -25,6 +26,13 @@ void resetGameState(Player* player, Ball* ball, Buffer* buffer) {
 	ball->direction_x = 1;
 }
 
+float randomFloat(float min, float max) {
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(min, max);
+	return dis(gen);
+}
+
 int main() {
 	// game objects setup
 	Player player = {
@@ -37,8 +45,8 @@ int main() {
 
 	Ball ball = {
 		0, 0, // starting x and y
-		0, 0, // direction x and y
-		1, // speed
+		0.0f, 0.0f, // direction x and y
+		1.0f, // speed
 		rgbToUint32(195, 175, 205) // color
 	};
 
@@ -183,24 +191,23 @@ int main() {
 		/* -- SIMULATION -- */
 		handleKeyboardEvents(window);
 		// Player
-		if(player.direction != 0) {
-			size_t new_x = player.x + player.direction * player.speed;
-			// Keep player within screen bounds
-			if(new_x >= std::numeric_limits<size_t>::max()) {
-				new_x = 1;
-			} else if(new_x + player.width >= buffer.width) {
-				new_x = buffer.width - player.width - 1;
-			}
-			player.x = new_x;
+		float new_x = player.x + player.direction * player.speed;
+		// Keep player within screen bounds
+		if(new_x <= 0.0f) {
+			new_x = 0.0f;
+		} else if(new_x + player.width >= buffer.width) {
+			new_x = buffer.width - player.width;
 		}
+		player.x = new_x;
+
 
 		// Ball
 		if(ball.direction_x != 0 && ball.direction_y != 0) {
-			size_t new_x = ball.x + ball.direction_x * ball.speed;
-			size_t new_y = ball.y + ball.direction_y * ball.speed;
+			float new_x = ball.x + ball.direction_x * ball.speed;
+			float new_y = ball.y + ball.direction_y * ball.speed;
 
 			// Left and right wall collisions
-			if(new_x >= std::numeric_limits<size_t>::max()) {
+			if(new_x <= 0) {
 				new_x = 0;
 				ball.direction_x *= -1;
 			} else if (new_x + 6 >= buffer.width) {
@@ -212,20 +219,21 @@ int main() {
 			if(new_y + 6 >= buffer.height) {
 				new_y = buffer.height - 6;
 				ball.direction_y *= -1;
-			} else if(new_y >= std::numeric_limits<size_t>::max() || new_y == 0) {
-
-
+			} else if(new_y <= 0) {
 				resetGameState(&player, &ball, &buffer);
 				initBricks(bricks, 10, 10, buffer.width, 7);
 				continue;
 			}
 
 			// Player collisions
-			if(new_y - 6 <= player.y && new_y + 6 >= player.y - player.height) {
-				if(new_x + 6 >= player.x && new_x + 6 <= player.x + player.width) {
-					new_y = player.y + 6;
-					ball.direction_y *= -1;
-				}
+			if(
+				new_y - 6 <= player.y &&
+				new_y >= player.y - player.height &&
+				new_x + 6 >= player.x &&
+				new_x <= player.x + player.width
+			) {
+				new_y = player.y + 6;
+				ball.direction_y = -1 * randomFloat(0.1, 1.0) + player.speed;
 			}
 
 			// Brick collisions
