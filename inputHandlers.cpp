@@ -1,3 +1,4 @@
+#include "game.h"
 #include "player.h"
 #include "inputHandlers.h"
 
@@ -14,12 +15,14 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 }
 
 void handleKeyboardEvents(GLFWwindow* window) {
-	Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+	Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
 	if (keys[GLFW_KEY_LEFT]) {
-		player->direction = -1;
+		game->player->direction = -1;
 	} else if (keys[GLFW_KEY_RIGHT]) {
-		player->direction = 1;
+		game->player->direction = 1;
+	} else if (keys[GLFW_KEY_SPACE]) {
+		game->isPaused = !game->isPaused;
 	} else {
-		player->direction = 0;
+		game->player->direction = 0;
 	}
 }

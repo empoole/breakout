@@ -7,6 +7,7 @@
 #include "inputHandlers.h"
 #include "graphicsBuffer.h"
 #include "shaders.h"
+#include "game.h"
 #include "ball.h"
 #include "bricks.h"
 #include "player.h"
@@ -14,7 +15,6 @@
 /*********************
 * -- GLOBAL VARS  -- *
 **********************/
-bool isRunning = false;
 Brick bricks[168];
 
 void resetGameState(Player* player, Ball* ball, Buffer* buffer) {
@@ -50,6 +50,11 @@ int main() {
 		rgbToUint32(195, 175, 205) // color
 	};
 
+	Game game = {
+		&player,
+		false, false
+	};
+
 	// GLFW Setup
 	glfwSetErrorCallback(errorCallback);
 
@@ -67,7 +72,7 @@ int main() {
 	}
 
 	// Provide a pointer to the player instance to the keyboard handler
-	glfwSetWindowUserPointer(window, &player);
+	glfwSetWindowUserPointer(window, &game);
 
 	glfwSetKeyCallback(window, keyboardCallback);
 	glfwMakeContextCurrent(window);
@@ -147,7 +152,7 @@ int main() {
 	glBindVertexArray(fullscreenTriangeVAO);
 
 	// Prepare game
-	isRunning = true;
+	game.isRunning = true;
 	uint32_t clearColor = rgbToUint32(0, 0, 0);
 	player.x = buffer.width / 2;
 	player.y = 40;
@@ -162,7 +167,7 @@ int main() {
 	/******************
 	* -- MAIN LOOP -- *
 	*******************/
-	while(!glfwWindowShouldClose(window) && isRunning) {
+	while(!glfwWindowShouldClose(window) && game.isRunning) {
 		/* -- Poll Events -- */
 		glfwPollEvents();
 
@@ -187,9 +192,10 @@ int main() {
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 
-
 		/* -- SIMULATION -- */
 		handleKeyboardEvents(window);
+		if (game.isPaused) continue;
+
 		// Player
 		float new_x = player.x + player.direction * player.speed;
 		// Keep player within screen bounds
