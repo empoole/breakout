@@ -15,7 +15,7 @@
 /*********************
 * -- GLOBAL VARS  -- *
 **********************/
-Brick bricks[168];
+Brick bricks[NUM_BRICKS];
 
 void resetGameState(Player* player, Ball* ball, Buffer* buffer) {
 	player->x = buffer->width / 2;
@@ -240,15 +240,24 @@ int main() {
 			) {
 				new_y = player.y + 6;
 				ball.direction_y = -1 * randomFloat(0.1, 1.0) + player.speed;
+				if (new_x <= player.x + (player.width / 2)) {
+					ball.direction_x = -1;
+				} else if (new_x > player.x + (player.width / 2)) {
+					ball.direction_x = 1;
+				}
 			}
 
 			// Brick collisions
-			for(size_t i = 0; i < 168; ++i) {
+			for(size_t i = 0; i < NUM_BRICKS; ++i) {
 				Brick* brick = &bricks[i];
 				if (detectBrickCollision(new_x, new_y, brick)) {
 					ball.direction_y *= -1;
-					ball.direction_x *= -1;
 					brick->isBroken = true;
+					if (new_x <= (brick->x + brick->width / 2)) {
+						ball.direction_x = -1;
+					} else {
+						ball.direction_x = 1;
+					}
 					break;
 				}
 			}

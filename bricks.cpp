@@ -3,7 +3,7 @@
 
 void initBricks(Brick* bricks, size_t brickHeight, size_t brickWidth, size_t bufferWidth, size_t numRows = 7) {
 	size_t bricksPerRow = bufferWidth / brickWidth;
-	for(int i = 0; i < 168; ++i) {
+	for(int i = 0; i < NUM_BRICKS; ++i) {
 		Brick* brick = &bricks[i];
 		brick->height = brickHeight;
 		brick->width = brickWidth;
@@ -15,7 +15,7 @@ void drawBricks(Buffer* buffer, size_t brickWidth, size_t brickHeight, Brick* br
 	size_t bricksPerRow = buffer->width / brickWidth;
 	size_t row = 0;
 	size_t col = 0;
-	for (int i = 0; i < 168; ++i) {
+	for (int i = 0; i < NUM_BRICKS; ++i) {
 		Brick* brick = &bricks[i];
 		uint32_t color = colors[row];
 		if (brick->isBroken) color = rgbToUint32(0, 0, 0);

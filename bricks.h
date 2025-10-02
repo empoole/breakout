@@ -5,6 +5,8 @@
 #include "utils.h"
 #include "ball.h"
 
+#define NUM_BRICKS 168
+
 struct Brick {
 	size_t x, y;
 	size_t height, width;
